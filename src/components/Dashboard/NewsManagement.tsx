@@ -48,7 +48,7 @@ const generateUniqueCode = (prefix: string):string => {
 const NewsComponent: React.FC = () => {
   const {posts, setPosts} = useDatabase();
   const [articles, setArticles] = useState<Article[]>(posts);
-
+  const [loading, setLoading] = useState(false);
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
@@ -68,7 +68,7 @@ const uploadImage = async (): Promise<string> => {
     throw new Error('No valid image file selected');
   }
   
-  console.log('Uploading file:', imageFile.name, 'Size:', imageFile.size, 'Type:', imageFile.type);
+  
   
   // Convert File to base64 (matching the docs format)
   const base64 = await new Promise<string>((resolve, reject) => {
@@ -144,7 +144,7 @@ const uploadImage = async (): Promise<string> => {
     if (!confirm('Are you sure you want to delete this article?')) {
       return;
     }
-
+    setLoading(true);
     try {
       const res = await fetch('/api/delete-article', {
         method: 'DELETE',
@@ -159,18 +159,23 @@ const uploadImage = async (): Promise<string> => {
         if (selectedArticle?.id === articleId) {
           setSelectedArticle(null);
         }
+        setLoading(false);
       } else {
         console.error('Delete failed:', await res.text());
         alert('Failed to delete article');
+        setLoading(false);
       }
     } catch (error) {
       console.error('Delete error:', error);
       alert('Failed to delete article');
+      setLoading(false);
     }
   };
 
   const handleSaveArticle = async () => {
+    newArticle.author = "Moreko High School";
     if (newArticle.title && newArticle.author && newArticle.paragraphs[0]) {
+      setLoading(true);
       let imageURL = await uploadImage();
       const article = {
         id: generateUniqueCode("ARTICLE-"),
@@ -183,7 +188,6 @@ const uploadImage = async (): Promise<string> => {
         featuredImage: imageURL || 'https://via.placeholder.com/300x200/6b7280/white?text=No+Image'
       };
 
-      console.log(imageURL)
 
       const res = await fetch('/api/upload-article', {
         method: 'POST',
@@ -203,47 +207,24 @@ const uploadImage = async (): Promise<string> => {
         paragraphs: ['']
       });
       setShowAddForm(false);
-
+      setLoading(false);
     }
     else{
       console.log('error')
+      setLoading(false);
     }
     }
   };
 
-  const getStatusIcon = (status: Article['status']): React.ReactNode => {
-    switch (status) {
-      case 'published':
-        return <CheckCircle className="w-4 h-4 text-green-600" />;
-      case 'draft':
-        return <Clock className="w-4 h-4 text-yellow-600" />;
-      default:
-        return null;
-    }
-  };
 
-  const getStatusColor = (status: Article['status']): string => {
-    switch (status) {
-      case 'published':
-        return 'bg-green-100 text-green-800';
-      case 'draft':
-        return 'bg-yellow-100 text-yellow-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  return (
+ return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">School News</h2>
           <p className="text-gray-600">Manage and publish school news articles</p>
         </div>
-        <div className="flex items-center space-x-2 px-4 py-2 bg-yellow-100 rounded-lg">
-          <Clock className="w-5 h-5 text-yellow-600" />
-          <span className="font-medium text-yellow-800">{articles.length} articles published</span>
-        </div>
+      
       </div>
 
       <div className="flex justify-end mb-4">
@@ -261,6 +242,7 @@ const uploadImage = async (): Promise<string> => {
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold">Create New Article</h3>
             <button
+              title='Close'
               onClick={() => setShowAddForm(false)}
               className="text-gray-500 hover:text-gray-700"
             >
@@ -269,7 +251,7 @@ const uploadImage = async (): Promise<string> => {
           </div>
           
           <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex  flex-col gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
                 <input
@@ -280,19 +262,10 @@ const uploadImage = async (): Promise<string> => {
                   placeholder="Enter article title"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Author</label>
-                <input
-                  type="text"
-                  value={newArticle.author}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewArticle(prev => ({ ...prev, author: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter author name"
-                />
-              </div>
+              
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex flex-col gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
                 <select
@@ -343,6 +316,7 @@ const uploadImage = async (): Promise<string> => {
                   />
                   {newArticle.paragraphs.length > 1 && (
                     <button
+                      title='Remove Paragraph'
                       onClick={() => handleRemoveParagraph(index)}
                       className="text-red-600 hover:text-red-800 p-2"
                     >
@@ -356,10 +330,11 @@ const uploadImage = async (): Promise<string> => {
             <div className="flex space-x-3 pt-4 border-t">
               <button
                 onClick={handleSaveArticle}
+                disabled={loading}
                 className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
               >
                 <Save className="w-4 h-4" />
-                <span>Publish Article</span>
+                <span>{loading ? 'Uploading...' : 'Upload Article'}</span>
               </button>
               <button
                 onClick={() => setShowAddForm(false)}
@@ -382,24 +357,24 @@ const uploadImage = async (): Promise<string> => {
               <div className="space-y-4">
                 {articles.map((article) => (
                   <div key={article.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                    <div className="flex space-x-4">
+                    <div className="flex space-x-4 flex-wrap">
                       <img
                         src={article.featuredImage}
                         alt={article.title}
-                        className="w-40 h-40 object-cover rounded-lg flex-shrink-0"
+                        className="w-full h-50 object-cover rounded-lg flex-shrink-0 mb-5"
                       />
                       <div className="flex-1">
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex-1">
                             <h3 className="font-semibold text-lg mb-1">{article.title}</h3>
-                            <div className="flex items-center space-x-4 text-sm text-gray-600 mb-2">
+                            <div className="flex items-center  space-x-4 text-sm w-full text-gray-600 mb-2">
                               <span className="flex items-center">
                                 <User className="w-4 h-4 mr-1" />
-                                {article.author}
+                                {article.author.split(" ")[0]}
                               </span>
                               <span className="flex items-center">
                                 <Calendar className="w-4 h-4 mr-1" />
-                                {article.submittedAt}
+                                {article.submittedAt.split(",")[0]}
                               </span>
                               <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
                                 {article.category}
@@ -407,10 +382,7 @@ const uploadImage = async (): Promise<string> => {
                             </div>
                             <p className="text-gray-700 line-clamp-2">{article.content}</p>
                           </div>
-                          <span className={`px-3 py-1 rounded-full text-sm font-medium flex items-center ${getStatusColor(article.status)} ml-4`}>
-                            {getStatusIcon(article.status)}
-                            <span className="ml-1 capitalize">{article.status}</span>
-                          </span>
+                         
                         </div>
                         
                         <div className="flex space-x-2">
@@ -424,10 +396,12 @@ const uploadImage = async (): Promise<string> => {
 
                           <button
                             onClick={() => handleDeleteArticle(article.id)}
+                            disabled={loading}
                             className="flex items-center space-x-1 px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50"
                           >
                             <Delete className="w-4 h-4" />
-                            <span>Delete</span>
+                            <span>{
+                              loading ? 'Deleting...' : 'Delete'}</span>
                           </button>
                         </div>
                       </div>

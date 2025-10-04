@@ -98,12 +98,13 @@ html {
     right: -40px;
     padding-right: 20px;
     display: flex;
-
+    
     transition: 300ms;
     user-select: none;
 }
 .hide{
   display: none;
+  width: 0; 
 }
 
 .homeLinks{
@@ -114,13 +115,14 @@ html {
 
 .showMenu{
     right: 0px;
+    width: 100%;
     position: absolute;
     background: oklch(44.4% 0.177 26.899);
 }
 
 .hideMenu{
-    right: -250px
-
+    right: -250px;
+    width: 0; 
 }
 
 .staticLinks{

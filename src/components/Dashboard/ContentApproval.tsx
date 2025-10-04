@@ -23,6 +23,7 @@ interface Submission {
   grade: string;
   category: string;
   submittedAt: string;
+  featuredImage: string;
   status: 'pending' | 'approved' | 'rejected';
 }
 
@@ -139,15 +140,21 @@ const ContentApproval: React.FC = () => {
                   >
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
+                        <div className="flex items-center mb-4">
+                        <span className={`px-3 py-1 rounded text-sm font-medium flex items-center ${getStatusColor(submission.status)}`}>
+                          {getStatusIcon(submission.status)}
+                          <span className="ml-1 capitalize">{submission.status}</span>
+                        </span>
+                      </div>
                         <h3 className="font-semibold text-lg mb-1">{submission.title}</h3>
                         <div className="flex items-center space-x-4 text-sm text-gray-600 mb-2">
                           <span className="flex items-center">
                             <User className="w-4 h-4 mr-1" />
-                            {submission.author} ({submission.grade})
+                            {submission.author.split(' ')[0]} ({submission.grade.split(' ')[0].slice(0, 2) + submission.grade.split(' ')[1]})
                           </span>
                           <span className="flex items-center">
                             <Calendar className="w-4 h-4 mr-1" />
-                            {submission.submittedAt}
+                            {submission.submittedAt.split(',')[0]}
                           </span>
                           <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
                             {submission.category}
@@ -155,12 +162,7 @@ const ContentApproval: React.FC = () => {
                         </div>
                         <p className="text-gray-700 line-clamp-2">{submission.content}</p>
                       </div>
-                      <div className="flex items-center space-x-2 ml-4">
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium flex items-center ${getStatusColor(submission.status)}`}>
-                          {getStatusIcon(submission.status)}
-                          <span className="ml-1 capitalize">{submission.status}</span>
-                        </span>
-                      </div>
+                      
                     </div>
                     
                     <div className="flex space-x-2">
@@ -211,6 +213,7 @@ const ContentApproval: React.FC = () => {
               <CardContent>
                 <div className="space-y-4">
                   <div>
+                    <img src={selectedSubmission.featuredImage} alt={selectedSubmission.title} className="w-full h-auto mb-4" />
                     <h3 className="text-xl font-bold mb-3">{selectedSubmission.title}</h3>
                     <div className="text-sm text-gray-600 mb-4 space-y-1">
                       <p><strong>Author:</strong> {selectedSubmission.author}</p>
