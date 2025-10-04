@@ -17,21 +17,10 @@ import { Modal } from "../Dashboard/Modal";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const params = useSearchParams()
+  
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    
-    const encodedCallbackUrl = params.get("username");
-    let decodedUrl; 
-    if(encodedCallbackUrl){
-      decodedUrl = decodeURIComponent(encodedCallbackUrl); 
-      setEmail(decodedUrl)
-    }
-    else{
-      decodedUrl = "/"
-    }
-  },[]);
+
   
 
  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
