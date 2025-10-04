@@ -12,6 +12,7 @@ import NavBar from "./NavBar";
 import styles from "@/components/styles/HomepageStyles.module.css";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import { validate } from "@/lib/validate";
+import { Modal } from "../Dashboard/Modal";
 const voucher_codes = require("voucher-code-generator");
 
 const generateUniqueCode = (prefix: string) => {
@@ -29,6 +30,7 @@ const generateUniqueCode = (prefix: string) => {
 const Login = () => {
 
   const userId = generateUniqueCode("MHS-");
+   const [error, setError] = useState("");
 
   const initValues = {
     email: "",
@@ -55,12 +57,20 @@ const Login = () => {
   window.location.href = res.url; // This will follow the redirect
 } else {
   const result = await res.json();
-  // Handle error or success
+  if (result.error === "User already exists") {
+    setError("User already exists");
+  };
+    
 }
   };
 
   return (
     <React.Fragment>
+    {
+      error.length > 0 && (
+        <Modal isOpen={true} onClose={() => setError("")} type="error" message={error} title="Invalid Credentials"/>
+      )
+    }
       <NavBar />
       <div className="min-h-screen bg-red-800 flex justify-center p-4 ">
         <div
