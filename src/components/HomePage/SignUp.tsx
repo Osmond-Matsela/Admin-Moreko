@@ -13,6 +13,7 @@ import styles from "@/components/styles/HomepageStyles.module.css";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import { validate } from "@/lib/validate";
 import { Modal } from "../Dashboard/Modal";
+
 const voucher_codes = require("voucher-code-generator");
 
 const generateUniqueCode = (prefix: string) => {
@@ -31,6 +32,7 @@ const Login = () => {
 
   const userId = generateUniqueCode("MHS-");
    const [error, setError] = useState("");
+   const [loading , setLoading] = useState(false);
 
   const initValues = {
     email: "",
@@ -43,7 +45,7 @@ const Login = () => {
   };
 
   const handleSubmit = async (values: typeof initValues) => {
-    
+    setLoading(true);
     values.id = userId;
     const res = await fetch("/api/save-user-to-db", {
       method: "POST",
@@ -55,11 +57,13 @@ const Login = () => {
 
     if (res.redirected) {
   window.location.href = res.url; // This will follow the redirect
+  setLoading(false);
 } else {
   const result = await res.json();
   if (result.error === "User already exists") {
     setError("User already exists");
   };
+  setLoading(false);
     
 }
   };
@@ -108,10 +112,11 @@ const Login = () => {
                   <StepOne />
 
                   <Button
+                  disabled={loading}
                     type="submit"
                     className="w-full bg-red-800 hover:bg-red-900 text-white"
                   >
-                    Sign In
+                    {loading ? "Registering..." : "Register"}
                   </Button>
                 </Form>
               )}
@@ -121,10 +126,6 @@ const Login = () => {
               <div className="text-sm text-gray-600">
                 Don't have an account? Sign up
               </div>
-
-              <Link href="/" className="text-sm text-gray-600 cursor-pointer">
-                ← Go to Home page
-              </Link>
             </div>
           </Card>
         </div>

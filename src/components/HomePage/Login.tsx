@@ -19,13 +19,14 @@ const Login = () => {
   const [password, setPassword] = useState("");
   
   const [error, setError] = useState("");
+  const [loading , setLoading] = useState(false);
 
 
   
 
  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
   event.preventDefault();
-  
+  setLoading(true);
   try {
     const res = await signIn("credentials", { 
       redirect: false, 
@@ -36,10 +37,12 @@ const Login = () => {
     
     if (res?.error) {
       setError("Incorrect email or password");
+      setLoading(false);
     }
   } catch (err) {
     console.error('Sign in error:', err);
     setError("Incorrect credentials");
+    setLoading(false);
   }
 };
   return (
@@ -97,15 +100,16 @@ const Login = () => {
 
           <Button
             type="submit"
+            disabled={loading}
             className="w-full bg-red-800 hover:bg-red-900 text-white"
           >
-            Sign In
+            {loading ? "Logging in..." : "Login"}
           </Button>
         </form>
 
         <div className="mt-6 text-center space-y-2">
           <div className="text-sm text-gray-600">
-            Don't have an account? <Link href="/register">Sign Up</Link>
+            Don't have an account? <Link href="/register" className="text-red-800 cursor-pointer " >Sign Up</Link>
           </div>
 
           <Link
