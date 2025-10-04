@@ -3,7 +3,6 @@ import { useState } from 'react';
 
 
 import { Send, Eye, Users, Link, TestTube } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
@@ -33,17 +32,13 @@ const SMSComposer = ({ contacts }: SMSComposerProps) => {
   const [shortLink, setShortLink] = useState('');
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [testPhoneNumber, setTestPhoneNumber] = useState('');
-  const { toast } = useToast();
 
   const generateShortLink = () => {
     if (documentUrl) {
       // Simulate short link generation
       const shortCode = Math.random().toString(36).substring(2, 8);
       setShortLink(`https://mhs.ly/${shortCode}`);
-      toast({
-        title: "Short link generated",
-        description: "Link has been created and added to your message."
-      });
+     
     }
   };
 
@@ -71,22 +66,13 @@ const SMSComposer = ({ contacts }: SMSComposerProps) => {
 
   const handleSendMessage = () => {
     if (!message.trim()) {
-      toast({
-        title: "Message required",
-        description: "Please enter a message before sending.",
-        variant: "destructive"
-      });
+   
       return;
     }
 
     const recipients = getRecipientList();
     const finalMessage = shortLink ? `${message}\n\nDocument: ${shortLink}` : message;
 
-    // Simulate sending SMS
-    toast({
-      title: "Message sent successfully!",
-      description: `SMS sent to ${recipients.length} recipients.`
-    });
 
     // Reset form
     setMessage('');
@@ -96,18 +82,11 @@ const SMSComposer = ({ contacts }: SMSComposerProps) => {
 
   const handleSendTest = () => {
     if (!testPhoneNumber || !message.trim()) {
-      toast({
-        title: "Test message failed",
-        description: "Please enter both a phone number and message.",
-        variant: "destructive"
-      });
+      
       return;
     }
 
-    toast({
-      title: "Test message sent!",
-      description: `Test SMS sent to ${testPhoneNumber}`
-    });
+    
   };
 
   const grades = ['8', '9', '10', '11', '12'];
