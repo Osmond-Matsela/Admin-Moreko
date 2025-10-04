@@ -1,0 +1,99 @@
+.styles {
+  backface-visibility: hidden;
+  
+  max-width: min(1920px, 100vw) !important;
+  margin: auto;
+}
+
+.navbar {
+  max-width: min(1920px, 100vw) !important;
+  margin: auto;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+}
+
+.menu {
+  display: none;
+}
+.buttons {
+  display: flex;
+}
+.title {
+  display: block;
+}
+
+
+.login {
+  display: flex;
+  flex-direction: row;
+  width: min(1000px, 90vw);
+}
+
+.form{
+    width: min(420px, 90vw);
+}
+.card{
+    width: min(420px, 90vw);
+    
+}
+
+.card h1{
+    font-size: clamp(25px, 2.5vw, 2rem);
+}
+@media (min-width: 541px) {
+  .menu {
+    display: none;
+  }
+  .buttons {
+    display: flex;
+  }
+  .title {
+    display: block;
+  }
+}
+
+@media (max-width: 760px) {
+  .menu {
+    display: flex;
+  }
+  .buttons {
+    display: none;
+  }
+  .title {
+    display: none;
+  }
+  .dashbuttons {
+    display: none;
+  }
+
+ 
+}
+
+@media (min-width: 789px) {
+  .dashbuttons {
+    display: flex;
+  }
+}
+
+@media (max-width: 788px) {
+  .dashbuttons {
+    display: none;
+  }
+}
+
+
+@media (max-width: 940px) {
+   .login{
+    flex-direction: column;
+  }
+    
+}
+
+@media (max-width: 355px) {
+  .title {
+    display: none;
+  }
+}

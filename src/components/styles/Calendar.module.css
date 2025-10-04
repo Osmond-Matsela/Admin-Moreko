@@ -1,0 +1,10 @@
+.calendar{
+    width: min(700px, 95vw) !important;
+    height: min(400px, 95vh) !important;
+    margin: auto;
+    position: relative;
+}
+
+.main{
+    background: oklch(85.142% 0.0001 271.152 / 0.397);
+}
