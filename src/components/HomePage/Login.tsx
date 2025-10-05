@@ -59,7 +59,7 @@ const Login = () => {
         <h1 className="font-bold text-gray-800 mb-4 text-center">
           Welcome to Moreko High School
         </h1>
-        <p className="text-gray-600 mt-2 text-center">Excellence in Education</p>
+        <p className="text-gray-600 mt-2 text-center">Hard Work Conquers All</p>
       </Card>
       <Card className={`p-8 ${styles.form}`}>
         <div className="text-center mb-8">

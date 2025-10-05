@@ -87,7 +87,7 @@ const Login = () => {
               Welcome to Moreko High School
             </h1>
             <p className="text-gray-600 mt-2 text-center">
-              Excellence in Education
+              Hard Work Conquers All
             </p>
           </Card>
           <Card className={`p-8 ${styles.form}`}>

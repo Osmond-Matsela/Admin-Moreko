@@ -19,7 +19,7 @@ const NavBar = () => {
               <Image src={"/images/logo.png"} width={50} height={50} alt='LOGO'/>
               <div className={`${styles.title}`}>
                 <h1 className="text-xl font-bold">Moreko High School</h1>
-                <p className="text-red-200 text-sm">Excellence in Education</p>
+                <p className="text-red-200 text-sm">Hard Work Conquers All</p>
               </div>
             </div>
 
