@@ -94,9 +94,9 @@ const Login = () => {
             <div className="text-center mb-8">
               <div className="mx-auto w-20 h-20 bg-red-800 rounded-full flex items-center justify-center mb-4">
                 <Image
-                  src={"/images/LOGO.svg"}
-                  width={40}
-                  height={40}
+                  src={"/images/logo.png"}
+                  width={100}
+                  height={100}
                   alt="LOGO"
                 />
               </div>

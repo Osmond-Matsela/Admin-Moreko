@@ -64,7 +64,7 @@ const Login = () => {
       <Card className={`p-8 ${styles.form}`}>
         <div className="text-center mb-8">
           <div className="mx-auto w-20 h-20 bg-red-800 rounded-full flex items-center justify-center mb-4">
-           <Image src={"/images/LOGO.svg"} width={40} height={40} alt='LOGO'/>
+           <Image src={"/images/logo.png"} width={40} height={40} alt='LOGO'/>
           </div>
           <h1 className="text-4xl font-bold text-gray-800">
             Login

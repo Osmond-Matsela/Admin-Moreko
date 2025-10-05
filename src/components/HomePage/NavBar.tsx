@@ -16,7 +16,7 @@ const NavBar = () => {
         
           <div className="flex justify-between items-center min-h-20">
             <div className="flex items-center space-x-3">
-              <Image src={"/images/LOGO.svg"} width={50} height={50} alt='LOGO'/>
+              <Image src={"/images/logo.png"} width={50} height={50} alt='LOGO'/>
               <div className={`${styles.title}`}>
                 <h1 className="text-xl font-bold">Moreko High School</h1>
                 <p className="text-red-200 text-sm">Excellence in Education</p>
