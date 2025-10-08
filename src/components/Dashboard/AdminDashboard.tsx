@@ -25,14 +25,16 @@ import DashNavBar from './DashboardNav';
 import UserManagement from './UserManagement';
 import { signOut, useSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
+import { useDatabase } from '@/context/Database';
 
 const AdminDashboard = () => {
   const [activeView, setActiveView] = useState('dashboard');
   const { data: session, status } = useSession();
+  const { posts, studentArticles } = useDatabase();
   const stats = [
-    { title: 'Published Articles', value: '12', icon: FileText, color: 'text-blue-600' },
+    { title: 'Published Articles', value: posts.length, icon: FileText, color: 'text-blue-600' },
     { title: 'Active Subscribers', value: '245', icon: Users, color: 'text-green-600' },
-    { title: 'Pending Approvals', value: '3', icon: CheckSquare, color: 'text-orange-600' },
+    { title: 'Pending Approvals', value: studentArticles.length , icon: CheckSquare, color: 'text-orange-600' },
     { title: 'Messages Sent', value: '89', icon: MessageSquare, color: 'text-purple-600' }
   ];
 
@@ -121,36 +123,7 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
 
-            {/* Recent Activity */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-sm">Approved article: "Inter-house Sports Results"</span>
-                    <span className="text-xs text-gray-500 ml-auto">1 hour ago</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <span className="text-sm">Sent newsletter to 245 subscribers</span>
-                    <span className="text-xs text-gray-500 ml-auto">3 hours ago</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                    <span className="text-sm">New student submission pending review</span>
-                    <span className="text-xs text-gray-500 ml-auto">5 hours ago</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                    <span className="text-sm">Uploaded "Term 2 Exam Guidelines.pdf"</span>
-                    <span className="text-xs text-gray-500 ml-auto">1 day ago</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          
           </div>
         );
     }

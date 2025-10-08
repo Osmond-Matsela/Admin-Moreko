@@ -1,8 +1,8 @@
-import { addData } from '@/lib/DatabaseOperations';
+
 import { NextRequest, NextResponse } from 'next/server';
 
-let apiKey = process.env.NEXT_PUBLIC_SMS_API_KEY;
-let apiSecret = process.env.NEXT_PUBLIC_SMS_SECRET;
+let apiKey = process.env.SMS_API_KEY;
+let apiSecret = process.env.SMS_SECRET;
 let accountApiCredentials = apiKey + ':' + apiSecret;
 
 
@@ -13,6 +13,7 @@ export async function POST(req: NextRequest) {
   const data = await req.json();
 
   const { to, message } = data;
+  
   const url = 'https://rest.mymobileapi.com/v3/BulkMessages';
   let options = {
     method: 'POST',
@@ -29,7 +30,7 @@ export async function POST(req: NextRequest) {
     }),
   };
   
-  fetch(url, options).catch(err => console.error(err));
+  fetch(url, options).then(res => res.json()).then(data => console.log(data)).catch(err => console.error(err));
 
   return NextResponse.json({message: "Message sent successfully"}, {status: 200});
 

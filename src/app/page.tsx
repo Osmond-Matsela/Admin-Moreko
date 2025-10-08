@@ -9,7 +9,8 @@ export default function Home() {
 
   useEffect(() => {
     redirect("/login");
-  })
+  },[]);
+  
   return (
     <div className="">   
         <Login />

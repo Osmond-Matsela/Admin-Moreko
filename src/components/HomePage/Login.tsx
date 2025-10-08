@@ -1,20 +1,22 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
-import { GraduationCap, User, Users } from "lucide-react";
+
 import { Card } from "../ui/card";
 import { Label } from "../ui/label";
-import { Input } from "../ui/input";
+
 import { Button } from "../ui/button";
 import Link from "next/link";
 import Image from "next/image";
 import NavBar from "./NavBar";
 import styles from "@/components/styles/HomepageStyles.module.css"
-import { signIn } from "next-auth/react";
-import { useSearchParams } from "next/navigation";
+import { signIn, useSession } from "next-auth/react";
+
 import { Modal } from "../Dashboard/Modal";
+import Loader from "./Loader";
 
 const Login = () => {
+  const { data: session, status } = useSession();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   
@@ -45,6 +47,9 @@ const Login = () => {
     setLoading(false);
   }
 };
+  if (status === "loading") {
+    return <Loader />;
+  }
   return (
     <>
     {

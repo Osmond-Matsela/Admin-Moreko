@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { 
   Send, 
@@ -20,25 +20,8 @@ const CommunicationCenter = () => {
   // Helper to get unique parents from chatMessages
 
   const { parents } = useDatabase();
-  const getParentListFromChats = () => {
-    const parentMap: { [phone: string]: { name: string; phone: string; unread: boolean } } = {};
-    
 
-    // Add all parents from the database (subscribers state)
-    subscribers.forEach(p => {
-      if (!parentMap[p.phone]) {
-        parentMap[p.phone] = { name: p.name, phone: p.phone, unread: false };
-      }
-    });
-    return Object.values(parentMap);
-  };
-  type ChatMessage = {
-    sender: string;
-    receiver: string;
-    message: string;
-    numbe: string;
-    timestamp: number;
-  };
+ 
   const [activeTab, setActiveTab] = useState('compose');
   const [message, setMessage] = useState({
     type: 'sms',
@@ -46,135 +29,69 @@ const CommunicationCenter = () => {
     content: '',
     recipients: 'all'
   });
-  const [subscribers, setSubscribers] = useState<any[]>([]);
+  const [subscribers, setSubscribers] = useState<any>(0);
   const [selectedParent, setSelectedParent] = useState<string>('');
+  const [groups, setGroups] = useState<any[]>([{ groupID: -1, groupName: 'All' }]);
 
+  const hasFetched = useRef(false);
 
+useEffect(() => {
+  if (!hasFetched.current) {
+    hasFetched.current = true;
+    const fetchSubscribers = async () => {
+      const groups = await getSmsGroups();
+      setGroups(prep => prep.concat(groups));
+      let total = 0;
 
+      groups.forEach((group: any) => {
+        total += group.count;
+      })
+      setSubscribers(total);
+    };
+    fetchSubscribers();
+  }
+}, []);
 
-  const handleSendChatMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const res = await fetch('/api/send-sms', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ to: selectedParent, message: message.content })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to send SMS');
-      setMessage({ ...message, content: '' });
-      // Refresh chat
-      const res2 = await fetch(`/api/chat-history?parentNum=${selectedParent}`);
-      const data2 = await res2.json();
-
-    } catch (err: any) {
-      alert('Error sending SMS: ' + err.message);
-    }
+ const getSmsGroups = async (): Promise<any[]> => {
+    const res = await fetch('/api/get-sms-groups', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const data = await res.json();
+    console.log(data.groups);
+    if (!res.ok) throw new Error(data.error || 'Failed to get SMS groups');
+    return data.groups;
   };
 
-  const renderChatTab = () => (
-    <Card>
-      <CardHeader>
-        <CardTitle>SMS Chat</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex gap-6">
-          {/* Parent list */}
-          <div className="w-1/3 border-r pr-4">
-            <h4 className="font-semibold mb-2">Parents</h4>
-            <ul className="space-y-2">
-              {getParentListFromChats().map(parent => (
-                <li key={parent.phone}>
-                  <button
-                    className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left ${selectedParent === parent.phone ? 'bg-green-100' : 'hover:bg-gray-100'} ${parent.unread ? 'border-l-4 border-green-600' : ''}`}
-                    onClick={() => setSelectedParent(parent.phone)}
-                  >
-                    <span className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-700 font-bold">
-                      {parent.name[0]}
-                    </span>
-                    <span className="flex-1">{parent.name}</span>
-                    {parent.unread && <span className="text-xs text-green-600 font-bold">New</span>}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-          {/* Chat thread */}
-          <div className="flex-1 flex flex-col">
-            <div className="border rounded-lg p-4 h-80 overflow-y-auto bg-gray-50 mb-4 flex flex-col gap-2" style={{scrollBehavior: 'smooth'}}>
-              {true ? (
-                <p>Loading chat...</p>
-              ) : 0 !== 0 ? (
-                <p className="text-center text-gray-400">No messages yet.</p>
-              ) : (
-                []
-                  .filter(msg => msg === selectedParent)
-                  .map((msg, idx) => (
-                    <div key={idx} className={`flex ${msg === 'admin' ? 'justify-end' : 'justify-start'}`}> 
-                      <div className={`flex items-end gap-2`}>
-                        {msg !== 'admin' && (
-                          <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-700 font-bold">
-                            {subscribers.find(p => p.phone === msg)?.name?.[0] || msg}
-                          </div>
-                        )}
-                        <div className={`max-w-xs px-4 py-2 rounded-2xl shadow ${msg === 'admin' ? 'bg-green-600 text-white' : 'bg-white text-gray-900 border'}`}> 
-                          <span className="block text-sm">{msg}</span>
-                          <span className="block text-[10px] mt-1 text-gray-400 text-right">{new Date(msg).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                        </div>
-                        {msg === 'admin' && (
-                          <div className="w-8 h-8 rounded-full bg-red-800 flex items-center justify-center text-white font-bold">A</div>
-                        )}
-                      </div>
-                    </div>
-                  ))
-              )}
-
-            </div>
-            <form onSubmit={handleSendChatMessage} className="flex gap-2 items-center">
-              <input
-                type="text"
-                className="flex-1 px-4 py-2 border rounded-2xl focus:ring-2 focus:ring-green-600"
-                placeholder="Type a message..."
-                value={message.content}
-                onChange={e => setMessage({ ...message, content: e.target.value })}
-                maxLength={160}
-                required
-              />
-              <Button type="submit" className="bg-green-600 text-white rounded-2xl px-6 py-2">Send</Button>
-            </form>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-
+ 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    
     if (message.type === 'sms') {
+      const res = await fetch('/api/get-sms-numbers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({groupID: message.recipients, groupSize: subscribers})
+      });
+      const data = await res.json();
       
-      try {
-        
-        parents.forEach(async(parent: { phone: any; }) => {
-          console.log({ to: parent.phone, message: message.content})
-          const res = await fetch('/api/send-sms', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ to: parent.phone, message: message.content})
-          });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.error || 'Failed to send SMS');
+      try{
+       data.data.results.forEach(async (number: any) => {
+        await fetch('/api/send-sms', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ to: number.number, message: message.content})
         });
-        
-      } catch (err: any) {
-        alert('Error sending SMS: ' + err.message);
+       })
       }
-      setMessage({ type: 'sms', subject: '', content: '', recipients: 'all' });
-    } else {
-      // Email logic (unchanged)
-      alert('Email sent successfully!');
-      setMessage({ type: 'sms', subject: '', content: '', recipients: 'all' });
+      catch (error: any) {
+        console.log(error);
+      }
+
+      if (!res.ok) throw new Error(data.error || 'Failed to send SMS');
     }
+       
   };
 
   const renderComposeTab = () => (
@@ -209,12 +126,17 @@ const CommunicationCenter = () => {
             <Label htmlFor="recipients">Send to</Label>
             <select
               id="recipients"
-             className="mt-1 block w-full px-4 py-2 border outline-none border-gray-300 rounded-md shadow-sm focus:ring-red-800 focus:border-red-800"
+              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-red-800 focus:border-red-800 outline-none "
               value={message.recipients}
               onChange={(e) => setMessage({...message, recipients: e.target.value})}
             >
-              <option value="all">All Subscribers</option>
-              <option value="parents">Parents Only</option>
+              {
+                groups.map((group) => (
+                  <option key={group.groupID} value={group.groupID}>
+                    {group.groupName}
+                  </option>
+                ))
+              }
             </select>
           </div>
 
@@ -274,12 +196,12 @@ const CommunicationCenter = () => {
             [].map((msg, idx) => (
               <div key={idx} className="p-4 border rounded-lg flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-700 font-bold">
-                  {msg === 'admin' ? 'A' : (subscribers.find(p => p.phone === msg)?.name?.[0] || msg)}
+                  {/* {msg === 'admin' ? 'A' : (subscribers.find(p => p.phone === msg)?.name?.[0] || msg)} */}
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium">{msg === 'admin' ? 'Admin' : (subscribers.find(p => p.phone === msg)?.name || msg)}</span>
-                    <span className="text-xs text-gray-500">{new Date(msg).toLocaleString()}</span>
+                    {/* <span className="font-medium">{msg === 'admin' ? 'Admin' : (subscribers.find(p => p.phone === msg)?.name || msg)}</span>
+                    <span className="text-xs text-gray-500">{new Date(msg).toLocaleString()}</span> */}
                   </div>
                   <p className="text-gray-600 text-sm mb-1">{msg}</p>
                 </div>
@@ -295,8 +217,6 @@ const CommunicationCenter = () => {
     switch (activeTab) {
       case 'history':
         return renderHistoryTab();
-      case 'chat':
-        return renderChatTab();
       default:
         return renderComposeTab();
     }
@@ -308,7 +228,7 @@ const CommunicationCenter = () => {
         <h2 className="text-2xl font-bold text-gray-900">Communication Center</h2>
         <div className="flex items-center space-x-2">
           <Users className="w-5 h-5 text-red-800" />
-          <span className="text-sm text-gray-600">{subscribers.length} total subscribers</span>
+          <span className="text-sm text-gray-600">{message.type == "sms" ? subscribers : 0} total subscribers</span>
         </div>
       </div>
 
@@ -330,14 +250,7 @@ const CommunicationCenter = () => {
           <Eye className="w-4 h-4 mr-2" />
           History
         </Button>
-        <Button
-          variant={activeTab === 'chat' ? 'default' : 'ghost'}
-          onClick={() => setActiveTab('chat')}
-         className={'flex-1 bg-white text-gray-900 shadow-sm cursor-pointer hover:bg-white hover:text-red-800'}
-        >
-          <MessageSquare className="w-4 h-4 mr-2" />
-          Chat
-        </Button>
+      
       </nav>
 
       {renderContent()}
