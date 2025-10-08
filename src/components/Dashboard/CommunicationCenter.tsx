@@ -163,12 +163,12 @@ useEffect(() => {
               placeholder={message.type === 'sms' ? 'Enter SMS message (160 chars max)' : 'Enter email content'}
               value={message.content}
               onChange={(e) => setMessage({...message, content: e.target.value})}
-              maxLength={message.type === 'sms' ? 160 : undefined}
+              maxLength={message.type === 'sms' ? 459 : undefined}
               required
             />
             {message.type === 'sms' && (
               <p className="text-sm text-gray-500">
-                {message.content.length}/160 characters
+                {message.content.length}/459 characters
               </p>
             )}
           </div>
