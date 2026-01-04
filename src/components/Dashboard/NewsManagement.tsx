@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   FileText, 
   Clock, 
@@ -12,9 +12,11 @@ import {
   Image,
   Trash2,
   Save,
-  Delete
+  Delete,
+
 } from 'lucide-react';
 import { useDatabase } from '@/context/Database';
+import Loader from '../HomePage/Loader';
 const voucher_codes = require("voucher-code-generator");
 
 interface Article {
@@ -59,6 +61,7 @@ const NewsComponent: React.FC = () => {
     featuredImage: '',
     paragraphs: ['']
   });
+
 
 const uploadImage = async (): Promise<string> => {
   const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
@@ -183,7 +186,7 @@ const uploadImage = async (): Promise<string> => {
         content: newArticle.paragraphs.join('\n\n'),
         author: newArticle.author,
         category: newArticle.category || 'General',
-        submittedAt: new Date().toLocaleString(),
+        submittedAt: new Date().toLocaleString().split(',')[0],
         status: 'published',
         featuredImage: imageURL || 'https://via.placeholder.com/300x200/6b7280/white?text=No+Image'
       };
@@ -216,6 +219,9 @@ const uploadImage = async (): Promise<string> => {
     }
   };
 
+  if (loading) {
+    return <Loader  />;
+  }
 
  return (
     <div className="space-y-6">
@@ -361,7 +367,7 @@ const uploadImage = async (): Promise<string> => {
                       <img
                         src={article.featuredImage}
                         alt={article.title}
-                        className="w-full h-50 object-cover rounded-lg flex-shrink-0 mb-5"
+                        className="w-full h-auto max-h-200 object-cover rounded-lg flex-shrink-0 mb-5"
                       />
                       <div className="flex-1">
                         <div className="flex items-start justify-between mb-3">

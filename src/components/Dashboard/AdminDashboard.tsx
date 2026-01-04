@@ -26,26 +26,31 @@ import UserManagement from './UserManagement';
 import { signOut, useSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
 import { useDatabase } from '@/context/Database';
+import Loader from '../HomePage/Loader';
 
 const AdminDashboard = () => {
   const [activeView, setActiveView] = useState('dashboard');
   const { data: session, status } = useSession();
-  const { posts, studentArticles } = useDatabase();
+  const { posts, studentArticles, fetchPosts, fetchStudentArticles } = useDatabase();
   const stats = [
     { title: 'Published Articles', value: posts.length, icon: FileText, color: 'text-blue-600' },
-    { title: 'Active Subscribers', value: '245', icon: Users, color: 'text-green-600' },
     { title: 'Pending Approvals', value: studentArticles.length , icon: CheckSquare, color: 'text-orange-600' },
-    { title: 'Messages Sent', value: '89', icon: MessageSquare, color: 'text-purple-600' }
   ];
+
+  useEffect(() => {
+
+    if (studentArticles.length === 0) fetchStudentArticles();
+    if (posts.length === 0) fetchPosts();
+
+  }, []);
+
+ 
 
   const renderContent = () => {
     switch (activeView) {
       case 'news':
         return <NewsManagement />;
-      case 'library':
-        return <LibraryManagement  />;
-      case 'gallery':
-        return <GalleryManagement />;
+      
       case 'communication':
         return <CommunicationCenter />;
       case 'approval':
@@ -177,22 +182,15 @@ const AdminDashboard = () => {
             <CheckSquare className="w-4 h-4 mr-2" />
             Content Approval
           </Button>
-          <Button
-            variant={activeView === 'library' ? 'default' : 'outline'}
-            onClick={() => setActiveView('library')}
-            className={activeView === 'library' ? 'bg-red-800 hover:bg-red-900 text-white' : 'border-none cursor-pointer shadow-md hover:shadow-sm bg-white text-gray-900  hover:text-red-900 hover:bg-white'}
-          >
-            <BookOpen className="w-4 h-4 mr-2" />
-            Library
-          </Button>
-          <Button
+          
+          {/* <Button
             variant={activeView === 'gallery' ? 'default' : 'outline'}
             onClick={() => setActiveView('gallery')}
             className={activeView === 'gallery' ? 'bg-red-800 hover:bg-red-900 text-white' : 'border-none cursor-pointer shadow-md hover:shadow-sm bg-white text-gray-900  hover:text-red-900 hover:bg-white'}
           >
             <Image className="w-4 h-4 mr-2" />
             Gallery
-          </Button>
+          </Button> */}
         </nav>
 
         {/* Main Content */}

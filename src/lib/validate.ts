@@ -1,11 +1,13 @@
 
 interface Values {
+    name?: string;
     email: string;
     password: string;
     confirmPassword: string;
 }
 
 interface Errors {
+    name?: string;
     email?: string;
     password?: string;
     confirmPassword?: string;
@@ -35,5 +37,8 @@ export const validate = (values: Values ) => {
     } else if (values.confirmPassword != values.password) {
       errors.confirmPassword = "Passwords do not match";
     }
+
+    if(!values.name) errors.name = "Field is required";
+    else if (values.name.length < 3) errors.name = "Name should have at least 3 characters";
     return errors;
 };

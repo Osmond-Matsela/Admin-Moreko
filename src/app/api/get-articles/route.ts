@@ -1,4 +1,5 @@
-import { getPosts } from "@/lib/DatabaseOperations";
+
+import { getPosts } from "@/lib/dbServer";
 import { NextRequest, NextResponse } from "next/server";
 
 

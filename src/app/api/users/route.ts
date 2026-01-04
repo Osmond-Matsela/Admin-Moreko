@@ -1,10 +1,11 @@
 
-import { getParents } from "@/lib/DatabaseOperations";
-import { NextResponse, NextRequest } from "next/server";
+
+import { getParents } from "@/lib/dbServer";
+import { NextResponse } from "next/server";
 
 export async function GET() {
 
-  const user = await getParents("parent");
+  const user = await getParents();
 
   if (user) {
     return NextResponse.json(user);

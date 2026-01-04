@@ -102,7 +102,9 @@
   font-weight: 500;
   font-size: 14px;
   letter-spacing: 0.2px;
+  text-wrap: nowrap;
 }
+
 
 .wifi_loader .text::before, .wifi_loader .text::after {
   content: attr(data-text);

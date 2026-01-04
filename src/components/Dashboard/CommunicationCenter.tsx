@@ -14,14 +14,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Label } from '../ui/label';
 import { useDatabase } from '@/context/Database';
+import Loader from '../HomePage/Loader';
 
 
 const CommunicationCenter = () => {
   // Helper to get unique parents from chatMessages
 
-  const { parents } = useDatabase();
+  const { subscribers, setSubscribers } = useDatabase();
 
- 
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('compose');
   const [message, setMessage] = useState({
     type: 'sms',
@@ -29,8 +30,7 @@ const CommunicationCenter = () => {
     content: '',
     recipients: 'all'
   });
-  const [subscribers, setSubscribers] = useState<any>(0);
-  const [selectedParent, setSelectedParent] = useState<string>('');
+  
   const [groups, setGroups] = useState<any[]>([{ groupID: -1, groupName: 'All' }]);
 
   const hasFetched = useRef(false);
@@ -42,7 +42,7 @@ useEffect(() => {
       const groups = await getSmsGroups();
       setGroups(prep => prep.concat(groups));
       let total = 0;
-
+    
       groups.forEach((group: any) => {
         total += group.count;
       })
@@ -53,13 +53,16 @@ useEffect(() => {
 }, []);
 
  const getSmsGroups = async (): Promise<any[]> => {
+    setLoading(true);
     const res = await fetch('/api/get-sms-groups', {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' }
     });
     const data = await res.json();
-    console.log(data.groups);
     if (!res.ok) throw new Error(data.error || 'Failed to get SMS groups');
+    
+    setLoading(false);
+
     return data.groups;
   };
 
@@ -69,6 +72,7 @@ useEffect(() => {
     
     
     if (message.type === 'sms') {
+      setLoading(true);
       const res = await fetch('/api/get-sms-numbers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -88,8 +92,13 @@ useEffect(() => {
       catch (error: any) {
         console.log(error);
       }
-
+      
       if (!res.ok) throw new Error(data.error || 'Failed to send SMS');
+
+      setMessage({ type: 'sms', subject: '', content: '', recipients: 'all' });
+      setGroups(groups);
+      setLoading(false);
+
     }
        
   };
@@ -101,7 +110,7 @@ useEffect(() => {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSendMessage} className="space-y-6">
-          <div className="flex space-x-4">
+          {/* <div className="flex space-x-4">
             <Button
               type="button"
               variant="default"
@@ -120,7 +129,7 @@ useEffect(() => {
               <Mail className="w-4 h-4 mr-2" />
               Email
             </Button>
-          </div>
+          </div> */}
 
           <div className="space-y-2">
             <Label htmlFor="recipients">Send to</Label>
@@ -133,7 +142,7 @@ useEffect(() => {
               {
                 groups.map((group) => (
                   <option key={group.groupID} value={group.groupID}>
-                    {group.groupName}
+                    {group.groupName}  [{group.groupName === 'All' ? subscribers : group.numbers}]
                   </option>
                 ))
               }
@@ -214,13 +223,12 @@ useEffect(() => {
   );
 
   const renderContent = () => {
-    switch (activeTab) {
-      case 'history':
-        return renderHistoryTab();
-      default:
-        return renderComposeTab();
-    }
+    return renderComposeTab();
   };
+
+  if (loading) {
+    return <Loader />;
+  }
 
   return (
     <div className="space-y-6">
@@ -232,7 +240,7 @@ useEffect(() => {
         </div>
       </div>
 
-      <nav className="flex space-x-1p-1 rounded-lg gap-2">
+      {/* <nav className="flex space-x-1p-1 rounded-lg gap-2">
         <Button
           variant={activeTab === 'compose' ? 'default' : 'ghost'}
           onClick={() => setActiveTab('compose')}
@@ -251,7 +259,7 @@ useEffect(() => {
           History
         </Button>
       
-      </nav>
+      </nav> */}
 
       {renderContent()}
     </div>

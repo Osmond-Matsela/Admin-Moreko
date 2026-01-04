@@ -1,5 +1,6 @@
 
-import { deleteArticle } from "@/lib/DatabaseOperations";
+
+import { deleteArticle } from "@/lib/dbServer";
 import { NextResponse, NextRequest } from "next/server";
 
 export async function DELETE(request: NextRequest) {
@@ -7,12 +8,12 @@ export async function DELETE(request: NextRequest) {
     
 
 
-    const user =  await deleteArticle("posts", data.id);
+   
+    try{
+         const user =  await deleteArticle(data.id);
 
-    if (!user) {
-        return NextResponse.json({error: "User does not exist"}, {status: 404});
-    }
-    else{
-        return NextResponse.json({message: "Parent deleted successfully"}, {status: 200});
+        return NextResponse.json({ message: "Article deleted successfully" }, { status: 200 });
+    }catch(e){
+        return NextResponse.json({ error: "Article does not exist" }, { status: 404 });
     }
 }

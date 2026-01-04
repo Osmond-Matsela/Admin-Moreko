@@ -9,7 +9,7 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
-
+service-keys.json
 # testing
 /coverage
 
@@ -41,3 +41,4 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+

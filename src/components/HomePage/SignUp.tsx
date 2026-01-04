@@ -39,7 +39,7 @@ const Login = () => {
     password: "",
     confirmPassword: "",
     name: "",
-    role: "",
+    role: "admin",
     id: "",
     token: "",
   };
@@ -141,6 +141,7 @@ const StepOne = () => {
     <>
     <div className="space-y-2">
         <Label htmlFor="email">Full Name</Label>
+          <ErrorMessage name="name" component="div" className="text-red-500 text-sm" />
         <Field
           type="name"
           id="name"
@@ -151,7 +152,7 @@ const StepOne = () => {
       </div>
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
-        <ErrorMessage name="email" component="div" className="text-red-500" />
+        <ErrorMessage name="email" component="div" className="text-red-500 text-sm" />
         <Field
           type="email"
           id="email"
@@ -163,7 +164,7 @@ const StepOne = () => {
 
       <div className="space-y-2">
         <Label htmlFor="password">Password</Label>
-        <ErrorMessage name="password" component="div" className="text-red-500" />
+        <ErrorMessage name="password" component="div" className="text-red-500 text-sm" />
         <Field
           type="password"
           id="password"
@@ -175,7 +176,7 @@ const StepOne = () => {
       </div>
       <div className="space-y-2">
         <Label htmlFor="password">Confirm Password</Label>
-        <ErrorMessage name="confirmPassword" component="div" className="text-red-500" />
+        <ErrorMessage name="confirmPassword" component="div" className="text-red-500 text-sm" />
        <Field
           type="password"
           id="confirmpassword"

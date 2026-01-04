@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     }),
   };
   
-  fetch(url, options).then(res => res.json()).then(data => console.log(data)).catch(err => console.error(err));
+  fetch(url, options).then(res => res.json()).then(data => data).catch(err => console.error(err));
 
   return NextResponse.json({message: "Message sent successfully"}, {status: 200});
 

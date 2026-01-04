@@ -1,3 +1,5 @@
+import { fetchGroupsToken } from '@/lib/FetchToken';
+import { getGroupsToken } from '@/lib/TokenManager';
 import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
@@ -5,8 +7,9 @@ export const dynamic = 'force-dynamic';
 export async function POST(req: NextRequest) {
   
   const data = await req.json();
+ 
 
-  const apiKey = process.env.SMS_NUMBERS_API_KEY;
+  const apiKey = (await getGroupsToken()).split(' ')[1];
   console.log(data);
   const url = `https://bulk.smssouthafrica.co.za/api/App/Client/NumberManagement/Group/?groupToSearch=${data.groupID}&number=&value1=&value2=&value3=&value4=&value5=&value6=&page=1&pageSize=${data.groupSize}&sortBy=number&sortOrder=ascending`;
   console.log(url);

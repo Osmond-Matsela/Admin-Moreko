@@ -1,5 +1,7 @@
+
+import { addUser } from "@/lib/dbServer";
 import { NextRequest, NextResponse } from "next/server";
-import { addData, userExists } from "@/lib/DatabaseOperations";
+
 const bcrypt = require("bcrypt");
 
 export async function POST(request: NextRequest) {
@@ -8,16 +10,12 @@ export async function POST(request: NextRequest) {
   data.password = await bcrypt.hash(data.password, 10);
   const { confirmPassword, ...user } = data;
 
-  if (!await userExists("user", data.email)) {
-    await addData("user", user, user.id);
-    const { password, ...result } = user;
-    
-    return NextResponse.redirect(new URL(`/login?username=${result.email.toLowerCase().replace(/\s+/g, '-')}`, process.env.NEXT_PUBLIC_BASE_URL), {
-        status: 302 
-    })
-   
+  try {
+    await addUser(user);
+    return NextResponse.json({ message: "User added successfully" }, { status: 200 });
   }
-    
-    return NextResponse.json({error: "User already exists"}, {status: 409});
+  catch (e) {
+    return NextResponse.json({ error: "User already exists" }, { status: 400 });
+  }
   
 }
