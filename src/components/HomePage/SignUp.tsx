@@ -55,9 +55,9 @@ const Login = () => {
       body: JSON.stringify(values),
     })
 
-    if (res.redirected) {
-  window.location.href = res.url; // This will follow the redirect
-  setLoading(false);
+    if (res.ok) {
+      window.location.href = "/login"; // This will follow the redirect
+    setLoading(false);
 } else {
   const result = await res.json();
   if (result.error === "User already exists") {

@@ -25,17 +25,17 @@ export async function POST(request: NextRequest) {
     }
 
     const userFound = await getUser("admin", email);
-    const passwordMatches = await bcrypt.compare(password, userFound.password);
+    const passwordMatches = await bcrypt.compare(password, userFound?.password);
     if (!passwordMatches) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
 
     // Whitelist safe fields for client
     const safeUser = {
-      id: userFound.id,
-      email: userFound.email,
-      name: userFound.name,
-      role: userFound.role,
+      id: userFound?.id,
+      email: userFound?.email,
+      name: userFound?.name,
+      role: userFound?.role,
     };
 
     const accessToken = signJwtAccessToken(safeUser);

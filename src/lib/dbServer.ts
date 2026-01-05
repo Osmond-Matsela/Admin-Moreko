@@ -35,7 +35,9 @@ export const ArticleSchema = z.object({
 export const UserSchema = z.object({
   id: z.string().min(1),
   email: z.string(),
+  token: z.string().optional(),
   name: z.string().min(2).max(100),
+  password: z.string().min(6).max(100),
   role: z.string().optional(),
 });
 
@@ -174,6 +176,7 @@ export const getUser = async (role: string = "admin", email: string) => {
   const snap = await q.get();
 
   const doc = snap.docs[0];
+  if (!doc) return null;
   return doc.data();
 };
 
