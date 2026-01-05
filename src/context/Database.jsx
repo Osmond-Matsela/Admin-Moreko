@@ -57,8 +57,15 @@ const DatabaseProvider = ({ children }) => {
       const response = await fetch("/api/get-student-articles");
       const data = await response.json();
      
-      setStudentArticles(data);
+      if (!data) {
+        setStudentArticles([]);
+      }
+      else {
+        setStudentArticles(data);
+      }
+
     } catch (error) {
+      setStudentArticles([]);
       console.error("Error fetching posts:", error);
     }
   };

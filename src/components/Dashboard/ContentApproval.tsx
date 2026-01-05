@@ -104,6 +104,7 @@ const ContentApproval: React.FC = () => {
     }
   };
 
+  
   const pendingCount = studentArticles.filter((sub: { status: string; }) => sub.status === 'pending').length;
 
   return (

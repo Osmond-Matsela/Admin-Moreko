@@ -1,10 +1,13 @@
 import admin from "firebase-admin";
-const serviceAccount = require("../../service-keys.json");
-// Use existing app if initialized, otherwise initialize
-const app = !admin.apps.length
-  ? admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-    })
-  : admin.app();
 
-export const adminDb = admin.firestore(app);
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert({
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+    }),
+  });
+}
+
+export const adminDb = admin.firestore();

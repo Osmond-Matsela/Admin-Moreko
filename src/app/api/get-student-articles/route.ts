@@ -13,7 +13,6 @@ export async function GET(request: NextRequest) {
 
   try {
     const articles = await getPosts( "student-articles", limit, startAfter);
-    if (!articles.length) return NextResponse.json({ error: "Articles do not exist" }, { status: 404 });
     
     return NextResponse.json(articles);
   } catch (err: any) {
