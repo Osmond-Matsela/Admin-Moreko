@@ -1,13 +1,13 @@
 import { fetchGroupsToken } from "./FetchToken";
-import { adminDb } from "./firebaseAdmin"; // your initialized Firestore Admin instance
+import { adminDb } from "./firebaseAdmin";
 
-const TOKEN_LIFETIME = 15 * 60 * 1000; // 15 minutes
-const TOKEN_REFRESH_THRESHOLD = 1 * 60 * 1000; // refresh 1 min before expiry
+const TOKEN_LIFETIME = 15 * 60 * 1000;
+const TOKEN_REFRESH_THRESHOLD = 60 * 1000;
 
 let cachedToken: string | null = null;
 let tokenExpiry: number | null = null;
+let refreshPromise: Promise<string> | null = null;
 
-// Firestore helpers
 async function storeSMSToken(token: string, expiry: number) {
   await adminDb.collection("smsTokens").doc("groups").set({
     token,
@@ -16,16 +16,21 @@ async function storeSMSToken(token: string, expiry: number) {
   });
 }
 
-async function loadSMSToken(): Promise<{ token: string; expiry: number } | null> {
-  const doc = await adminDb.collection("smsTokens").doc("groups").get();
-  if (!doc.exists) return null;
-  return doc.data() as { token: string; expiry: number };
+async function loadSMSToken() {
+  const snap = await adminDb.collection("smsTokens").doc("groups").get();
+  if (!snap.exists) return null;
+
+  const data = snap.data();
+  if (!data?.token || !data?.expiry || typeof data.expiry !== "number") {
+    return null;
+  }
+
+  return { token: data.token, expiry: data.expiry };
 }
 
 export async function getGroupsToken() {
   const now = Date.now();
 
-  // Load from Firestore if in-memory cache is empty
   if (!cachedToken || !tokenExpiry) {
     const dbCache = await loadSMSToken();
     if (dbCache) {
@@ -34,20 +39,29 @@ export async function getGroupsToken() {
     }
   }
 
-  // Use cached token if still valid
   if (cachedToken && tokenExpiry && now < tokenExpiry - TOKEN_REFRESH_THRESHOLD) {
     return cachedToken;
   }
 
-  // Fetch a new token if missing or about to expire
-  const email = process.env.SMS_EMAIL!;
-  const password = process.env.SMS_PASSWORD!;
+  if (refreshPromise) {
+    return refreshPromise;
+  }
 
-  cachedToken = await fetchGroupsToken(email, password);
-  tokenExpiry = now + TOKEN_LIFETIME;
+  refreshPromise = (async () => {
+    const email = process.env.SMS_EMAIL!;
+    const password = process.env.SMS_PASSWORD!;
 
-  // Save to Firestore
-  await storeSMSToken(cachedToken, tokenExpiry);
+    const token = await fetchGroupsToken(email, password);
+    const expiry = Date.now() + TOKEN_LIFETIME;
 
-  return cachedToken;
+    cachedToken = token;
+    tokenExpiry = expiry;
+
+    await storeSMSToken(token, expiry);
+
+    refreshPromise = null;
+    return token;
+  })();
+
+  return refreshPromise;
 }

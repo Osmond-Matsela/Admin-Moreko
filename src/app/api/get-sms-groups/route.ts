@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   
-  const apiKey = (await getGroupsToken()).split(' ')[1];
+  const apiKey = (await getGroupsToken());
   
   const url = 'https://bulk.smssouthafrica.co.za/api/App/Client/NumberManagement/Groups';
 
@@ -15,7 +15,7 @@ export async function GET() {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
-        'Authorization': 'AEG ' + apiKey, 
+        'Authorization': apiKey, 
       }
     });
     

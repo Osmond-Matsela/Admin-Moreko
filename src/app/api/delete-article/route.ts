@@ -1,6 +1,6 @@
 
 
-import { deleteArticle } from "@/lib/dbServer";
+import {  deletePost } from "@/lib/dbServer";
 import { NextResponse, NextRequest } from "next/server";
 
 export async function DELETE(request: NextRequest) {
@@ -10,7 +10,7 @@ export async function DELETE(request: NextRequest) {
 
    
     try{
-         const user =  await deleteArticle(data.id);
+         const user =  await deletePost(data.id);
 
         return NextResponse.json({ message: "Article deleted successfully" }, { status: 200 });
     }catch(e){

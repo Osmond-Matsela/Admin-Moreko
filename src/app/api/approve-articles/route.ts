@@ -4,14 +4,21 @@ import { getServerSession } from "next-auth/next";
 
 import { z } from "zod";
 import { authOptions } from "@/lib/AuthOptions";
-import { addPosts, deleteArticle } from "@/lib/dbServer";
+import { addPosts,  deleteStudentArticle } from "@/lib/dbServer";
 
 const ApprovePostSchema = z.object({
-  id: z.string().min(1),
-  title: z.string().min(1),
-  content: z.string().min(1),
-  authorId: z.string().min(1),
+  id: z.string(),
+  title: z.string(),
+  content: z.string(),
+  author: z.string(),
+  grade: z.string(),
+  category: z.string(),
+  submittedAt: z.string(),
+  featuredImage: z.string(),
+  status: z.string(),
 });
+
+
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -40,9 +47,10 @@ export async function POST(request: NextRequest) {
   try {
     // Optionally run as a transaction if addPost and deleteArticle need atomicity
     await addPosts(postData);
-    await deleteArticle(postData.id);
+    await deleteStudentArticle(postData.id);
 
     return NextResponse.json({ message: "Article approved successfully" }, { status: 200 });
+    
   } catch (error: any) {
     return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
   }

@@ -361,7 +361,7 @@ const uploadImage = async (): Promise<string> => {
             </div>
             <div className="p-6">
               <div className="space-y-4">
-                {articles.map((article) => (
+                {articles.sort((a, b) => new Date(b.submittedAt.split(",")[0]).getFullYear() - new Date(a.submittedAt.split(",")[0]).getFullYear()).map((article) => (
                   <div key={article.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
                     <div className="flex space-x-4 flex-wrap">
                       <img

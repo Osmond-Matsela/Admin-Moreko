@@ -1,3 +1,4 @@
+
 // server-only Firestore Admin helpers
 import { adminDb } from "./firebaseAdmin";
 import { randomUUID } from "crypto";
@@ -148,10 +149,14 @@ export const getArticles = async (limit = 25, startAfter?: string) => {
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 };
 
-export const deleteArticle = async (id: string) => {
+export const deleteStudentArticle = async (id: string) => {
   await adminDb.collection("student-articles").doc(id).delete();
-  await adminDb.collection("posts").doc(id).delete();
+  
 };
+
+export const deletePost = async (id: string) => {
+  await adminDb.collection("posts").doc(id).delete();
+}
 
 // -------------------- Users --------------------
 
