@@ -5,38 +5,47 @@ import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  
-  const apiKey = (await getGroupsToken());
-  
+  let apiKey = await getGroupsToken();
+
   const url = 'https://bulk.smssouthafrica.co.za/api/App/Client/NumberManagement/Groups';
 
-  try {
-    const response = await fetch(url, {
+  async function callApi(token: string) {
+    const res = await fetch(url, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
-        'Authorization': apiKey, 
+        'Authorization': apiKey, // if API expects Bearer
       }
     });
-    
+    return res;
+  }
+
+  try {
+    let response = await callApi(apiKey);
+
+    // Retry once if unauthorized
+    if (response.status === 401 || response.status === 403) {
+      console.log('Token expired, refreshing...');
+      apiKey = await getGroupsToken(); // force refresh
+      response = await callApi(apiKey);
+    }
+
     if (!response.ok) {
       const text = await response.text();
       console.error('API Error:', response.status, text);
-      return NextResponse.json({ 
-        error: 'API request failed', 
+      return NextResponse.json({
+        error: 'API request failed',
         status: response.status,
-        details: text 
+        details: text
       }, { status: response.status });
     }
-    
+
     const data = await response.json();
-    // console.log('Success:', data);
-    
     return NextResponse.json(data, { status: 200 });
-    
+
   } catch (err) {
-    console.error('Error:', err);
-    return NextResponse.json({ 
+    console.error('Fetch Error:', err);
+    return NextResponse.json({
       error: 'Failed to fetch data',
       details: String(err)
     }, { status: 500 });
