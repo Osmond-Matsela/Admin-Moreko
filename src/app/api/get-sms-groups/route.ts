@@ -1,4 +1,3 @@
-import { fetchGroupsToken } from '@/lib/FetchToken';
 import { getGroupsToken } from '@/lib/TokenManager';
 import { NextResponse } from 'next/server';
 
@@ -14,7 +13,7 @@ export async function GET() {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
-        'Authorization': apiKey, // if API expects Bearer
+        'Authorization': token,
       }
     });
     return res;
@@ -26,7 +25,7 @@ export async function GET() {
     // Retry once if unauthorized
     if (response.status === 401 || response.status === 403) {
       console.log('Token expired, refreshing...');
-      apiKey = await getGroupsToken(); // force refresh
+      apiKey = await getGroupsToken(true); // Pass true to force refresh
       response = await callApi(apiKey);
     }
 
@@ -47,7 +46,7 @@ export async function GET() {
     console.error('Fetch Error:', err);
     return NextResponse.json({
       error: 'Failed to fetch data',
-      details: String(err)
+      details: err instanceof Error ? err.message : String(err)
     }, { status: 500 });
   }
 }

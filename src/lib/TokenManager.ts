@@ -28,21 +28,7 @@ async function loadSMSToken() {
   return { token: data.token, expiry: data.expiry };
 }
 
-export async function getGroupsToken() {
-  const now = Date.now();
-
-  if (!cachedToken || !tokenExpiry) {
-    const dbCache = await loadSMSToken();
-    if (dbCache) {
-      cachedToken = dbCache.token;
-      tokenExpiry = dbCache.expiry;
-    }
-  }
-
-  if (cachedToken && tokenExpiry && now < tokenExpiry - TOKEN_REFRESH_THRESHOLD) {
-    return cachedToken;
-  }
-
+async function refreshToken() {
   if (refreshPromise) {
     return refreshPromise;
   }
@@ -64,4 +50,32 @@ export async function getGroupsToken() {
   })();
 
   return refreshPromise;
+}
+
+export async function getGroupsToken(forceRefresh: boolean = false) {
+  const now = Date.now();
+
+  // Force refresh invalidates cache
+  if (forceRefresh) {
+    cachedToken = null;
+    tokenExpiry = null;
+    return refreshToken();
+  }
+
+  // Load from memory or DB
+  if (!cachedToken || !tokenExpiry) {
+    const dbCache = await loadSMSToken();
+    if (dbCache) {
+      cachedToken = dbCache.token;
+      tokenExpiry = dbCache.expiry;
+    }
+  }
+
+  // Return cached token if still valid
+  if (cachedToken && tokenExpiry && now < tokenExpiry - TOKEN_REFRESH_THRESHOLD) {
+    return cachedToken;
+  }
+
+  // Refresh token
+  return refreshToken();
 }
