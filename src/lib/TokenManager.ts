@@ -9,44 +9,83 @@ let tokenExpiry: number | null = null;
 let refreshPromise: Promise<string> | null = null;
 
 async function storeSMSToken(token: string, expiry: number) {
-  await adminDb.collection("smsTokens").doc("groups").set({
-    token,
-    expiry,
-    updatedAt: Date.now(),
-  });
+  try {
+    await adminDb.collection("smsTokens").doc("groups").set({
+      token,
+      expiry,
+      updatedAt: Date.now(),
+    });
+    console.log('[TokenManager] Token stored in Firestore');
+  } catch (error) {
+    console.error('[TokenManager] Failed to store token:', error);
+    // Don't throw - token is still usable even if storage fails
+  }
 }
 
 async function loadSMSToken() {
-  const snap = await adminDb.collection("smsTokens").doc("groups").get();
-  if (!snap.exists) return null;
+  try {
+    const snap = await adminDb.collection("smsTokens").doc("groups").get();
+    if (!snap.exists) {
+      console.log('[TokenManager] No token in Firestore');
+      return null;
+    }
 
-  const data = snap.data();
-  if (!data?.token || !data?.expiry || typeof data.expiry !== "number") {
+    const data = snap.data();
+    if (!data?.token || !data?.expiry || typeof data.expiry !== "number") {
+      console.log('[TokenManager] Invalid token data in Firestore');
+      return null;
+    }
+
+    console.log('[TokenManager] Token loaded from Firestore');
+    return { token: data.token, expiry: data.expiry };
+  } catch (error) {
+    console.error('[TokenManager] Failed to load token:', error);
     return null;
   }
-
-  return { token: data.token, expiry: data.expiry };
 }
 
 async function refreshToken() {
   if (refreshPromise) {
+    console.log('[TokenManager] Refresh already in progress, waiting...');
     return refreshPromise;
   }
 
   refreshPromise = (async () => {
-    const email = process.env.SMS_EMAIL!;
-    const password = process.env.SMS_PASSWORD!;
+    try {
+      console.log('[TokenManager] Starting token refresh with Playwright...');
+      
+      const email = process.env.SMS_EMAIL;
+      const password = process.env.SMS_PASSWORD;
 
-    const token = await fetchGroupsToken(email, password);
-    const expiry = Date.now() + TOKEN_LIFETIME;
+      if (!email || !password) {
+        throw new Error('SMS_EMAIL or SMS_PASSWORD environment variables are missing');
+      }
 
-    cachedToken = token;
-    tokenExpiry = expiry;
+      const token = await fetchGroupsToken(email, password);
+      
+      if (!token) {
+        throw new Error('fetchGroupsToken returned empty token');
+      }
 
-    await storeSMSToken(token, expiry);
+      const expiry = Date.now() + TOKEN_LIFETIME;
 
-    refreshPromise = null;
-    return token;
+      cachedToken = token;
+      tokenExpiry = expiry;
+
+      await storeSMSToken(token, expiry);
+
+      console.log('[TokenManager] Token refreshed successfully');
+      return token;
+      
+    } catch (error) {
+      console.error('[TokenManager] Token refresh failed:', error);
+      // Clear cache on failure
+      cachedToken = null;
+      tokenExpiry = null;
+      throw new Error(`Token refresh failed: ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      refreshPromise = null;
+    }
   })();
 
   return refreshPromise;
@@ -55,27 +94,38 @@ async function refreshToken() {
 export async function getGroupsToken(forceRefresh: boolean = false) {
   const now = Date.now();
 
-  // Force refresh invalidates cache
-  if (forceRefresh) {
-    cachedToken = null;
-    tokenExpiry = null;
-    return refreshToken();
-  }
-
-  // Load from memory or DB
-  if (!cachedToken || !tokenExpiry) {
-    const dbCache = await loadSMSToken();
-    if (dbCache) {
-      cachedToken = dbCache.token;
-      tokenExpiry = dbCache.expiry;
+  try {
+    // Force refresh invalidates cache
+    if (forceRefresh) {
+      console.log('[TokenManager] Force refresh requested');
+      cachedToken = null;
+      tokenExpiry = null;
+      return await refreshToken();
     }
-  }
 
-  // Return cached token if still valid
-  if (cachedToken && tokenExpiry && now < tokenExpiry - TOKEN_REFRESH_THRESHOLD) {
-    return cachedToken;
-  }
+    // Load from memory or DB
+    if (!cachedToken || !tokenExpiry) {
+      console.log('[TokenManager] No cached token, loading from Firestore...');
+      const dbCache = await loadSMSToken();
+      if (dbCache) {
+        cachedToken = dbCache.token;
+        tokenExpiry = dbCache.expiry;
+      }
+    }
 
-  // Refresh token
-  return refreshToken();
+    // Return cached token if still valid
+    if (cachedToken && tokenExpiry && now < tokenExpiry - TOKEN_REFRESH_THRESHOLD) {
+      const timeLeft = Math.round((tokenExpiry - now) / 1000);
+      console.log(`[TokenManager] Returning cached token (expires in ${timeLeft}s)`);
+      return cachedToken;
+    }
+
+    // Refresh token
+    console.log('[TokenManager] Token expired or near expiry, refreshing...');
+    return await refreshToken();
+    
+  } catch (error) {
+    console.error('[TokenManager] getGroupsToken error:', error);
+    throw error;
+  }
 }

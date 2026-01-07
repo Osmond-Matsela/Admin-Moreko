@@ -4,28 +4,31 @@ import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  let apiKey = await getGroupsToken();
-
-  const url = 'https://bulk.smssouthafrica.co.za/api/App/Client/NumberManagement/Groups';
-
-  async function callApi(token: string) {
-    const res = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-        'Authorization': token,
-      }
-    });
-    return res;
-  }
-
   try {
+    console.log('Starting API request...');
+    let apiKey = await getGroupsToken();
+    console.log('Token retrieved:', apiKey ? 'Yes' : 'No');
+
+    const url = 'https://bulk.smssouthafrica.co.za/api/App/Client/NumberManagement/Groups';
+
+    async function callApi(token: string) {
+      console.log('Calling API with token...');
+      const res = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': token,
+        }
+      });
+      console.log('API response status:', res.status);
+      return res;
+    }
+
     let response = await callApi(apiKey);
 
-    // Retry once if unauthorized
     if (response.status === 401 || response.status === 403) {
       console.log('Token expired, refreshing...');
-      apiKey = await getGroupsToken(true); // Pass true to force refresh
+      apiKey = await getGroupsToken(true);
       response = await callApi(apiKey);
     }
 
@@ -43,10 +46,17 @@ export async function GET() {
     return NextResponse.json(data, { status: 200 });
 
   } catch (err) {
-    console.error('Fetch Error:', err);
+    // Enhanced error logging
+    console.error('=== FULL ERROR DETAILS ===');
+    console.error('Error name:', err instanceof Error ? err.name : 'Unknown');
+    console.error('Error message:', err instanceof Error ? err.message : String(err));
+    console.error('Error stack:', err instanceof Error ? err.stack : 'No stack');
+    console.error('========================');
+    
     return NextResponse.json({
       error: 'Failed to fetch data',
-      details: err instanceof Error ? err.message : String(err)
+      message: err instanceof Error ? err.message : String(err),
+      stack: process.env.NODE_ENV === 'development' ? (err instanceof Error ? err.stack : undefined) : undefined
     }, { status: 500 });
   }
 }
