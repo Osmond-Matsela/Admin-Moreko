@@ -28,7 +28,7 @@ export async function GET() {
 
     if (response.status === 401 || response.status === 403) {
       console.log('Token expired, refreshing...');
-      apiKey = await getGroupsToken(true);
+      apiKey = await getGroupsToken();
       response = await callApi(apiKey);
     }
 

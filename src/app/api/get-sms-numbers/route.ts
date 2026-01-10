@@ -1,4 +1,4 @@
-import { fetchGroupsToken } from '@/lib/FetchToken';
+
 import { getGroupsToken } from '@/lib/TokenManager';
 import { NextRequest, NextResponse } from 'next/server';
 
